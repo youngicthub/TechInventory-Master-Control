@@ -1,0 +1,29 @@
+{
+  "name": "master-control",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "db",
+    "api",
+    "web"
+  ],
+  "scripts": {
+    "dev": "dotenv -e .env -- npm run dev --workspace=@masterctl/api",
+    "dev:web": "npm run dev --workspace=@masterctl/web",
+    "dev:all": "concurrently -n api,web -c red,yellow \"npm run dev\" \"npm run dev:web\"",
+    "build": "npm run typecheck && dotenv -e .env -- npm run build --workspaces --if-present",
+    "typecheck": "tsc --build && npm run typecheck --workspaces --if-present",
+    "db:push": "dotenv -e .env -- npm run push --workspace=@masterctl/db",
+    "db:push-force": "dotenv -e .env -- npm run push-force --workspace=@masterctl/db",
+    "gen:secrets": "node scripts/gen-secrets.mjs",
+    "admin": "dotenv -e .env -- node scripts/admin-tool.mjs",
+    "start": "dotenv -e .env -- npm run start --workspace=@masterctl/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "cross-env": "^7.0.3",
+    "dotenv-cli": "^8.0.0",
+    "typescript": "~5.9.3"
+  }
+}

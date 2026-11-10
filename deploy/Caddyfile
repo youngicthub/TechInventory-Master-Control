@@ -1,0 +1,6 @@
+# Caddy gets and renews the HTTPS certificate by itself. DOMAIN comes from
+# deploy/.env (see README-DEPLOY.md).
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy master:4100
+}

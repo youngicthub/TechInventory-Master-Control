@@ -1,0 +1,24 @@
+// Sessions: ending another admin's sessions, sign-out everywhere, login history.
+import { call, check, failures, adminToken } from "./lib.mjs";
+const token = await adminToken();
+const r = await call("POST", "/admins", { name: "Sess", email: "sess5@example.com", role: "monitoring_admin" }, token);
+const id = r.body?.admin?.id;
+const login = await call("POST", "/admin/login", { email: "sess5@example.com", password: r.body?.temporaryPassword });
+const t2 = login.body?.token;
+check("second admin logged in", !!t2);
+check("their session works", (await call("GET", "/admin/me", null, t2)).status === 200);
+check("revoking needs a reason", (await call("POST", `/admins/${id}/revoke-sessions`, {}, token)).status === 400);
+check("monitoring admin cannot revoke sessions", (await call("POST", `/admins/${id}/revoke-sessions`, { reason: "test reason" }, t2)).status === 403);
+check("super admin can revoke sessions", (await call("POST", `/admins/${id}/revoke-sessions`, { reason: "lost laptop" }, token)).status === 200);
+check("the old session is dead immediately", (await call("GET", "/admin/me", null, t2)).status === 401);
+await call("POST", "/admin/login", { email: "sess5@example.com", password: "wrong-password-1" });
+const re = await call("POST", "/admin/login", { email: "sess5@example.com", password: r.body?.temporaryPassword });
+check("they can sign in again", !!re.body?.token);
+const hist = await call("GET", "/admin/login-history", null, re.body?.token);
+const actions = (hist.body ?? []).map((e) => e.action);
+check("history shows sign-ins and the failed attempt", actions.includes("admin.login") && actions.includes("admin.login_failed"), JSON.stringify(actions));
+check("sign out everywhere ends the session", (await call("POST", "/admin/logout", null, re.body?.token)).status === 200 && (await call("GET", "/admin/me", null, re.body?.token)).status === 401);
+const audit = JSON.stringify((await call("GET", "/audit-logs?limit=200", null, token)).body);
+check("audit has revoke_sessions with the reason", audit.includes("admin.revoke_sessions") && audit.includes("lost laptop"));
+console.log(failures() ? `\n${failures()} FAILED` : "\nAll checks passed");
+process.exit(failures() ? 1 : 0);

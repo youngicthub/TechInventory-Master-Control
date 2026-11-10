@@ -1,0 +1,16 @@
+# From MasterControl/: docker compose up --build
+#
+# There's no local Postgres service here on purpose - MASTER_DATABASE_URL
+# is expected to point at a real Neon database (a second, separate one
+# from any customer's), same pattern as the main inventory app already
+# uses. See .env.example.
+services:
+  master-api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    ports:
+      - "4100:4100"
+    env_file:
+      - .env
+    restart: unless-stopped

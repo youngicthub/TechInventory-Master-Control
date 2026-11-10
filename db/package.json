@@ -1,0 +1,28 @@
+{
+  "name": "@masterctl/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts"
+  },
+  "scripts": {
+    "prepush": "node scripts/ensure-schema.mjs",
+    "push": "drizzle-kit push --config ./drizzle.config.ts",
+    "prepush-force": "node scripts/ensure-schema.mjs",
+    "push-force": "drizzle-kit push --force --config ./drizzle.config.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2",
+    "drizzle-zod": "^0.8.3",
+    "pg": "^8.22.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "@types/pg": "^8.20.0",
+    "drizzle-kit": "^0.31.10"
+  }
+}
